@@ -1,0 +1,80 @@
+:root{
+   --inter: "Inter", sans-serif;
+   --poppins: "Poppins", sans-serif; 
+
+   --white: #F2F8FC;
+   --sem-white: #bebebe;
+   --shadow: #cccccc34;
+   --dark: #1d2026;
+   --black: #0e1013;
+
+   --font-text: 14px;
+   --font-label: 13px;
+}
+
+*{
+   font-family: var(--poppins);
+   color: var(--white);
+   
+}
+body{
+   background-color: var(--black) !important;
+}
+form{
+   background-color: var(--dark);
+}
+
+label{
+   margin-bottom: 4px !important;
+   font-size: var(--font-text);
+}
+a {
+   letter-spacing: .2px !important;
+   
+   font-size: var(--font-label);
+}
+
+input{
+   font-size: var(--font-label) !important;
+   font-weight: 900;
+   background-color: #0e1013 !important;
+   color: var(--sem-white) !important;
+   border: 1px solid var(--shadow) !important;
+}
+input::placeholder{
+   color: var(--shadow) !important;
+   font-weight: 300 !important;
+   font-size: var(--font-label) !important;
+}
+.req{
+   color: red;
+}
+
+
+/*Name and Email Input designs*/
+.fm_form{
+   max-width: 450px;
+   margin: 0 auto;
+}
+.fm_title{
+   font-size: 1.9rem;
+}
+.fm_label{
+   font-weight: 300 !important;
+   font-size: 12px;
+   max-width: 390px;
+   margin: 0 auto !important;
+   margin-top: .9rem !important;
+   color: var(--sem-white);
+   line-height: 18px;
+}
+
+
+
+#btn{
+   font-size: var(--font-text) !important;
+   width: 100%;
+   margin: 0 !important;
+}
+
+
