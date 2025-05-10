@@ -1,3 +1,4 @@
+<!-- Main Form, Main site -->
 <?php 
   include("database.php");
 ?>
