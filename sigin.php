@@ -41,40 +41,61 @@
   <?php 
       mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // Enables exceptions
 
-      if($_SERVER["REQUEST_METHOD"] === "POST"){
-         if(isset($_POST['username']) && isset($_POST['password']) && isset($_POST['conf-password'])){
-            if(empty($_POST['username']) || empty($_POST['password']) || empty($_POST['conf-password'])){
-               return;
-            }
+      class InsertNewUser{
+         public $database;
+         private $name;
+         private $pass;
 
-            $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS);
-            $pass = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
-            $conf_pass = filter_input(INPUT_POST, 'conf-password', FILTER_SANITIZE_SPECIAL_CHARS);
+         public function __construct($database, $name, $pass){
+            $this->database = $database;
+            $this->name = $name;
+            $this->pass = $pass;
+         }
 
-            if($pass !== $conf_pass){
-               echo "<script>alert('Password don\'t match')</script>";
-               return;
-            }
+         public function insert(){
+            $sql_req = "INSERT INTO users (username, password) VALUES (?, ?)";
 
-            $hash = password_hash($pass, PASSWORD_DEFAULT); 
-            $sql_req = "INSERT INTO users (username, password) VALUE ('$username', '$hash')";
-            
             try{
-               mysqli_query($conn, $sql_req);
-               echo "<script>
-                  alert('Account has been register');
-                  window.location = 'login.php';
-               </script>";
+               $stmt = $this->database->prepare($sql_req);
+			      $stmt->bind_param("ss", $this->name, $this->pass);
+               $stmt->execute();
             }catch(mysqli_sql_exception $e){
-               if ($e->getCode() === 1062) {
-                  echo "<script>alert('Username already exists!')</script>";
-                  return;
+               if($e->getCode() === 1062){
+                  echo "<script>alert('Username already exists')</script>";
+                  exit();
+               }else{
+                  echo "<script>alert('Error: ".$e->getMessage()."')</script>";
+                  exit();
                }
-               echo "<script>alert('Database Could not connect')</script>";
-               return;
             }
          }
       }
+
+      if($_SERVER["REQUEST_METHOD"] !== "POST"){
+         exit();
+      }
+      if(empty($_POST['username']) || empty($_POST['password']) || empty($_POST['conf-password'])){
+         echo "<script>alert('All fields are required');</script>";
+         exit();
+      }
+ 
+
+      $username = filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS);
+      $pass = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
+      $conf_pass = filter_input(INPUT_POST, 'conf-password', FILTER_SANITIZE_SPECIAL_CHARS);
+
+      if($pass !== $conf_pass){
+         echo "<script>alert('Password don\'t match')</script>";
+         exit();
+      }
+
+      $hash = password_hash($pass, PASSWORD_DEFAULT); 
+      $database = $conn;
+      $insert = new InsertNewUser($database, $username, $hash);
+      $insert->insert();
+
+      echo "<script>alert('User created successfully'); window.location.href = 'login.php';</script>";  
+      exit();
   ?>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></>
