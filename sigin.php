@@ -57,7 +57,7 @@
 
             try{
                $stmt = $this->database->prepare($sql_req);
-			      $stmt->bind_param("ss", $this->name, $this->pass);
+	       $stmt->bind_param("ss", $this->name, $this->pass);
                $stmt->execute();
             }catch(mysqli_sql_exception $e){
                if($e->getCode() === 1062){
