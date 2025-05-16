@@ -39,39 +39,59 @@
     </form>
   </div>
   <?php 
-    if($_SERVER["REQUEST_METHOD"] === "POST"){
-      
-      if(isset($_POST["username"]) && isset($_POST["password"])){
-        $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
-        $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
 
-        if(empty($username) && empty($password)){ 
-          return;
+    class Request{
+        public $database;
+        private $name;
+  
+        public function __construct($database, $name){
+          $this->database = $database;
+          $this->name = $name;
         }
-
-        $sql_req = "SELECT * FROM users WHERE username = '$username'";
-        try{
-          $user = mysqli_query($conn, $sql_req);
-          if (mysqli_num_rows($user) > 0) {
-            $result = mysqli_fetch_assoc($user);
-        
-            if ($result['username'] == $username && password_verify($password, $result['password'])){
-              header("Location: dashboard.php");
-              exit;
+  
+        public function getUser(){
+          $sql_req = "SELECT * FROM users WHERE username = ?";
+  
+          try{
+            $stmt = $this->database->prepare($sql_req);
+            $stmt->bind_param("s", $this->name);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if (mysqli_num_rows($result) > 0) {
+              return $result->fetch_assoc(); // to return just the row in assosiative array
+            }else{
+              return null;
             }
-
-            echo "<script>alert('Username or password incorrect');</script>";
-            return;
-          }else{
-            echo "<script>alert('User not found')</script>";
-            return;
+            
+          }catch(mysqli_sql_exception){
+            echo "<script>alert('Something went wrong, Please Try again.')</script>";
+            exit();
           }
-        }catch(mysqli_sql_exception){
-          echo "<script>alert('Something went wrong, Please Try again.')</script>";
-          return;
-        } 
+        }
+     }
+  
+      if($_SERVER["REQUEST_METHOD"] !== "POST"){
+        exit();
       }
-    }
+
+      if(empty($_POST["username"]) && empty($_POST["password"])){ 
+        return;
+      }
+  
+      $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
+      $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
+      $result = new Request($conn, $username);
+      $user = $result->getUser();
+  
+      if(!$user || !password_verify($password, $user['password'])){
+        echo "<script>alert('Username or password incorrect');</script>";
+        exit;
+      }
+  
+      $name = $user['username'];
+      $_SESSION['username'] = $name;
+      header("Location: dashboard.php");
+      exit;
   ?>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></>
